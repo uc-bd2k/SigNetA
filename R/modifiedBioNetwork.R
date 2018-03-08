@@ -21,6 +21,7 @@ modifiedBioNetwork<-function(File=NULL,upload4=NULL,phy=FALSE,layOut=1,package=F
     }
     else{
       logic<-read.csv(file=File,sep='\t')
+      colnames(logic)<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
     }
   }
   else{

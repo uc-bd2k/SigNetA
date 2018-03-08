@@ -31,7 +31,8 @@ shinyServer(function(input,output,session){
       # File<<- read.csv(file=File,sep="\t")
       # #print(class(File))
       # #print(data[[GeneNames]])
-      path<-paste("http://dev.ilincs.org/tmp/",query[["File"]],sep="") #get file from url look it up
+      path<-paste("http://www.ilincs.org/tmp/",query[["File"]],sep="")
+     # path<-paste("http://dev.ilincs.org/tmp/",query[["File"]],sep="") #get file from url look it up
      # path<-paste("/Users/Rashid/Desktop/Rashid/Career/PhD/Research/Events/BD2KAllHandsMeeting/signatures/",query[["File"]],sep="")
       File<<-path
       # File<<- read.csv(file=path,sep="\t")
@@ -431,31 +432,54 @@ observe({
       #}
      # else{
         print(File)
-      ret<-topHundredNetwork(input$file1$datapath,upload1="yes",layOut=input$layout,proteinN=input$PPI,phy=input$phyactive,enrich=enrichAdd())
+      print("algo 1")
+      RWR(input$file1$datapath,upload5="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+   
       #}
       
     }
     else if(input$algorithm=="1" && (grepl("xls",File))){
-      ret<-topHundredNetwork(File,upload1="yes",layOut=input$layout,proteinN=input$PPI,phy=input$phyactive,enrich=enrichAdd())
+      print("algo 1 1")
+      RWR(File,upload5="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+
     }
    
     
     
-    else if(input$algorithm=="2"){
-      
-      
+    else if(input$algorithm=="2" && (!grepl("xls",File))){
+      print("algo 2")
+       print(File)
       ret<-bioNetwork(input$file1$datapath,upload2="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
     }
     
-    else if(input$algorithm=="3"){
-      ret<-dmGWAS(input$file1$datapath,upload3="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+    else if(input$algorithm=="2" && (grepl("xls",File))){
+      print("algo 2 2")
+      ret<-bioNetwork(File,upload2="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
     }
     
-    else if(input$algorithm=="4"){
+    else if(input$algorithm=="3"  && (!grepl("xls",File))){
+      print("algo 3")
+      ret<-dmGWAS(input$file1$datapath,upload3="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+    }
+    else if(input$algorithm=="3"  && (grepl("xls",File))){
+      ret<-dmGWAS(File,upload3="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+    }
+    
+    else if(input$algorithm=="4" && (!grepl("xls",File))){
+      print("algo4")
       modifiedBioNetwork(input$file1$datapath,upload4="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
     }
-    else if(input$algorithm=="5"){
-      RWR(input$file1$datapath,upload5="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+    else if(input$algorithm=="4" && (grepl("xls",File))){
+      print("algo4 4")
+      modifiedBioNetwork(File,upload4="yes",phy=input$phyactive,layOut=input$layout,package=FALSE)
+    }
+    else if(input$algorithm=="5"  && (!grepl("xls",File))){
+      ret<-topHundredNetwork(input$file1$datapath,upload1="yes",layOut=input$layout,proteinN=input$PPI,phy=input$phyactive,enrich=enrichAdd())
+   
+    }
+    else if(input$algorithm=="5"  && (grepl("xls",File))){
+
+      ret<-topHundredNetwork(File,upload1="yes",layOut=input$layout,proteinN=input$PPI,phy=input$phyactive,enrich=enrichAdd())
     }
     
    

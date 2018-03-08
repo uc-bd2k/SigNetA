@@ -17,6 +17,7 @@ if(!is.null(File))
 }
   else{
     File<-read.csv(file=File,sep='\t')
+    colnames(logic)<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
   }
 }
 else{

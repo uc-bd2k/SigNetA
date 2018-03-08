@@ -36,6 +36,12 @@ dashboardPage(
        
      # h4("Load Example"),
       actionButton("load_example","Load Example")),
+    selectInput("algorithm",
+                label="select an algorithm",choices=list("RWR"=1,"Bionet"=2,"dmGWAS"=3,"ModBioNet"=4,"SortNet"=5),                  
+                selected=1),
+    selectInput("PPI",
+                label="select a network",choices=list("Interactome"=1,"STRING"=2),                  
+                selected = 1),
    # tags$br(),
      # h4("Download Network"),
    box(
@@ -83,29 +89,29 @@ dashboardPage(
      )
      ),
    
-   box(title="Selections",solidHeader = TRUE,width=13,status="danger",collapsible = TRUE,collapsed = TRUE,
-       box(
-         title = "Algorithms", status = "warning",
-         collapsible = TRUE,
-         collapsed=TRUE,
-         solidHeader = TRUE,
-         width = 13,
-         selectInput("algorithm",
-                     label="select an algorithm",choices=list("topHundredNetwork"=1,"Bionet"=2,"dmGWAS"=3,"ModBioNet"=4,"RWR"=5),                  
-                     selected=1)
-       ),
+  ## box(title="Selections",solidHeader = TRUE,width=13,status="danger",collapsible = TRUE,collapsed = TRUE,
+      ## box(
+       ##  title = "Algorithms", status = "warning",
+       ##  collapsible = TRUE,
+        ## collapsed=TRUE,
+        ## solidHeader = TRUE,
+        ## width = 13,
+         ##selectInput("algorithm",
+                  ##   label="select an algorithm",choices=list("RWR"=1,"Bionet"=2,"dmGWAS"=3,"ModBioNet"=4,"SortNet"=5),                  
+                   ##  selected=1),
+      ## ),
       
-       box(
-         title = "Protein Protein Interaction", status = "warning",
-         collapsible = TRUE,
-         collapsed=TRUE,
-         solidHeader = TRUE,
-         width = 13,
-         selectInput("PPI",
-                     label="select a PPI dataset",choices=list("Interactome"=1,"STRING"=2),                  
-                     selected = 1)
-       )
-   ),
+      ## box(
+       ##  title = "Protein Protein Interaction", status = "warning",
+        ## collapsible = TRUE,
+        ## collapsed=TRUE,
+         ##solidHeader = TRUE,
+        ## width = 13,
+       ##  selectInput("PPI",
+                  ##   label="select a network",choices=list("Interactome"=1,"STRING"=2),                  
+                  ##   selected = 1),
+      ## )
+  ## ),
     box(
       title="Downloads",solidHeader = TRUE,width=13,status="danger",collapsible = TRUE,collapsed = TRUE,
       tags$br(),
