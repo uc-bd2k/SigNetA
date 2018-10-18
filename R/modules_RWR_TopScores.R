@@ -1,7 +1,22 @@
 modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
 {
+  
+  
   library(igraph)
   library(BioNet)
+  
+  if (is(subnet, "graphNEL")) {
+    subnet <- igraph.from.graphNEL(subnet) 
+#     interactomeLen<-length(V(subnet)$name)
+#     for (i in 1:interactomeLen){
+#       interactomeSub1<-strsplit(V(subnet)$name[i],"\\(")
+#        interactomeSub2<-strsplit(interactomeSub1[[1]][2],"\\)")
+#        V(subnet)$name[i]<-interactomeSub2[[1]]   #converting interactome gene names XYZ(11) to it's id components "11"
+#     }
+#   
+#     
+  }
+# print(V(subnet)$name[1:3])
   nsize=30
   
   input_scores=abs(data_vector)[names(data_vector) %in% V(subnet)$name]
@@ -11,7 +26,7 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
   input_scores[topgenes]=1
   
   scores_other=rep(min(input_scores), vcount(subnet)-length(input_scores))
-  names(scores_other)=setdiff(V(subnet)$name, names(input_scores))
+  names(scores_other)=setdiff(V(subnet)$name, names(input_scores)) #problem on this line for interactome
   
   p0=c(input_scores,scores_other)
   p0_sum2one=p0/sum(p0)
@@ -34,7 +49,7 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
     
     module_test=modules[[largest]]
     nsize_test <- vcount(module_test)
-    print(nsize_test)
+    #print(nsize_test)
     if (nsize_test >= nsize) {
       break
     }

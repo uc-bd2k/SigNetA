@@ -4,8 +4,8 @@
 \alias{RWR}
 \title{RWR Function}
 \usage{
-RWR(File = NULL, upload5 = NULL, phy = FALSE, layOut = 1,
-  package = FALSE)
+RWR(File = NULL, phy = FALSE, layOut = 1, package = FALSE,
+  nodeGoData = NULL, edgeGoData = NULL, proteinN = 1)
 }
 \arguments{
 \item{File}{? Defaults to NULL.}

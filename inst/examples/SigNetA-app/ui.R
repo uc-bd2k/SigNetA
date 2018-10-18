@@ -4,7 +4,7 @@ library(shinyjs)
 library(DT)
 library(shinydashboard)
 
-dashboardPage(
+dashboardPage(title="SigNetA",
 
   skin = "yellow",
 
@@ -37,10 +37,10 @@ dashboardPage(
      # h4("Load Example"),
       actionButton("load_example","Load Example")),
     selectInput("algorithm",
-                label="select an algorithm",choices=list("RWR"=1,"Bionet"=2,"dmGWAS"=3,"ModBioNet"=4,"SortNet"=5),                  
+                label="select an algorithm",choices=list("RWR"=1,"ModBioNet"=4,"SortNet"=5),                  
                 selected=1),
     selectInput("PPI",
-                label="select a network",choices=list("Interactome"=1,"STRING"=2),                  
+                label="select a network",choices=list("STRING"=1,"Interactome"=2),                  
                 selected = 1),
    # tags$br(),
      # h4("Download Network"),
@@ -53,7 +53,7 @@ dashboardPage(
        solidHeader = TRUE,
        width = 13,
        selectInput("layout",
-                   label="select a layout",choices=list("Fruchterman Reingold"=1,"D3layout"=2,"Grid"=3,"Kamada Kawai"=4,"Sphere"=5,"GraphOpt"=6),                  
+                   label="select a layout",choices=list("Fruchterman Reingold"=1,"Grid"=3,"Kamada Kawai"=4,"Sphere"=5,"GraphOpt"=6),                  
                    selected = 1)
      ),
    ##  box(
@@ -77,16 +77,16 @@ dashboardPage(
        selectInput("solve", "Physics :", choices=list("barnesHut"="barnesHut","repulsion"="repulsion","forceAtlas2Based"="forceAtlas2Based"),selected="barnesHut"),
        sliderInput("grav", "Gravitational Constant:", -3000, 0, 50),
        sliderInput("centralGrav", "Central Gravity:", 0, 10, 0.05)
-     ),
-     box(
-       title = "Pathways", status="warning",
-       collapsible = TRUE,
-       collapsed=TRUE,
-       width = 13,
-       
-       solidHeader = TRUE,
-       actionButton("goAn","Connect Pathways to Genes")
      )
+#      box(
+#        title = "Pathways", status="warning",
+#        collapsible = TRUE,
+#        collapsed=TRUE,
+#        width = 13,
+#        
+#        solidHeader = TRUE,
+#        actionButton("goAn","Connect Pathways to Genes")
+#      )
      ),
    
   ## box(title="Selections",solidHeader = TRUE,width=13,status="danger",collapsible = TRUE,collapsed = TRUE,
@@ -115,7 +115,7 @@ dashboardPage(
     box(
       title="Downloads",solidHeader = TRUE,width=13,status="danger",collapsible = TRUE,collapsed = TRUE,
       tags$br(),
-      downloadButton('downloadNetworkImage', 'Download Network Data'),
+      downloadButton('downloadNetworkData', 'Download Network Data'),
      tags$br(),
    
      # actionLink("saveImage", "Download as PNG"),
@@ -305,39 +305,15 @@ div.vis-configuration.vis-config-item.vis-config-s3{}
                                    tags$div("Loading...",id="loadmessage")
                   ),
                   textOutput(outputId="input_error2"),
-                  
+                # sliderInput("enrichFDR","Set FDR for enrichment",min=0.05,max=1,value=0.1),
+                  textInput("enrichFDR","Set FDR for enrichment",0.05),
+                 actionButton("goAn","Connect Pathways to Genes"),
                   DT::dataTableOutput('enrichmentAnalysis')
                   
                   
         )
       )
-      
-#       box(
-#         title="Network Customization",solidHeader = TRUE,width=3,status="danger",
-#       box(
-#         title = "Genes", status = "warning",
-#         collapsible = TRUE,
-#         collapsed=TRUE,
-#         solidHeader = TRUE,
-#         width = 12,
-#         textInput("nodeSelect", "Highlight Gene",value=c(), width = NULL, placeholder = NULL)
-#        # sliderInput("nodeSize", "Node Size:", 25, 100, 25)
-#         #selectInput("Focus", "Focus on node :",choices=list("BRCA1"="BRCA1","ATP"="ATP"),selected = "BRCA1")
-#       ),
-#      
-#       box(
-#         title = "Physics", status="warning",
-#         collapsible = TRUE,
-#         collapsed=TRUE,
-#         width = 12,
-#         
-#         solidHeader = TRUE,
-#         selectInput("phyactive", "Activate Physics :", choices=list("Yes"=TRUE,"No"=FALSE),selected=FALSE),
-#         selectInput("solve", "Physics :", choices=list("barnesHut"="barnesHut","repulsion"="repulsion","forceAtlas2Based"="forceAtlas2Based"),selected="barnesHut"),
-#         sliderInput("grav", "Gravitational Constant:", -3000, 0, 50),
-#         sliderInput("centralGrav", "Central Gravity:", 0, 10, 0.05)
-#         )
-#       ) #fluidpage ends
+
     
     
   )

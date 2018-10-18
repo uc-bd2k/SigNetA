@@ -4,8 +4,8 @@
 \alias{topHundredNetwork}
 \title{Top Hundred Network Function}
 \usage{
-topHundredNetwork(File = NULL, upload1 = NULL, layOut = 1, proteinN = 2,
-  phy = FALSE, enrich = NULL, package = FALSE)
+topHundredNetwork(File = NULL, phy = FALSE, layOut = 1, package = FALSE,
+  nodeGoData = NULL, edgeGoData = NULL, proteinN = 1)
 }
 \arguments{
 \item{File}{? Defaults to NULL.}

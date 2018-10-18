@@ -1,3 +1,4 @@
 load("/Users/Rashid/Desktop/Rpackages/SigNetA/inst/extdata/stringToEntrezDetailed.Rdata")
 load("/Users/Rashid/Desktop/Rpackages/SigNetA/inst/extdata/weightedGraphStringPPI_10.rda")
 ppiGW
+load("/Users/Rashid/Desktop/Rpackages/SigNetA/inst/extdata/lincscp_1.rda")

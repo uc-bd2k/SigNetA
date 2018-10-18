@@ -4,8 +4,8 @@
 \alias{modifiedBioNetwork}
 \title{ModifiedBioNetWork Function}
 \usage{
-modifiedBioNetwork(File = NULL, upload4 = NULL, phy = FALSE, layOut = 1,
-  package = FALSE)
+modifiedBioNetwork(File = NULL, phy = FALSE, layOut = 1,
+  package = FALSE, nodeGoData = NULL, edgeGoData = NULL, proteinN = 1)
 }
 \arguments{
 \item{File}{? Defaults to NULL.}

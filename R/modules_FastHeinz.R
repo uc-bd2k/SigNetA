@@ -1,5 +1,18 @@
 modules_FastHeinz=function(subnet,data_vector)
   {
+  
+  
+  if (is(subnet, "graphNEL")) {
+    subnet <- igraph.from.graphNEL(subnet) 
+#     interactomeLen<-length(V(subnet)$name)
+#     for (i in 1:interactomeLen){
+#       interactomeSub1<-strsplit(V(subnet)$name[i],"\\(")
+#       interactomeSub2<-strsplit(interactomeSub1[[1]][2],"\\)")
+#       V(subnet)$name[i]<-interactomeSub2[[1]]   #converting interactome gene names XYZ(11) to it's id components "11"
+#     }
+    
+    
+  }
     nsize=30
      
     gene_scores=abs(data_vector)[names(data_vector) %in% V(subnet)$name]

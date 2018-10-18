@@ -6,30 +6,83 @@
 #' @export
 #' @examples
 #' dmGWAS()  will analyze network for genes in signature from ilincs using ideker et. al. 2002 algorithm
-dmGWAS<-function(File=NULL,upload3=NULL,layOut=1,proteinN=2,phy=FALSE,enrich=NULL,package=FALSE){
-library(dmGWAS)
-library(DLBCL)
-library(visNetwork)
-data(interactome)
-if(!is.null(File))
-{  if(is.null(upload3)){
-  File<-File
-}
-  else{
-    File<-read.csv(file=File,sep='\t')
-    colnames(logic)<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-  }
-}
-else{
-  File<-read.csv(file=system.file("extdata", "sig_try3.tsv", package = "SigNetA"),sep='\t')
+dmGWAS<-function(File=NULL,layOut=1,proteinN=1,phy=FALSE,package=FALSE,nodeGoData=NULL,edgeGoData=NULL){
+# library(dmGWAS)
+# library(DLBCL)
+# library(visNetwork)
+# data(interactome)
+# if(!is.null(File))
+# {  if(is.null(upload3)){
+#   File<-File
+# }
+#   else{
+#     File<-read.csv(file=File,sep='\t')
+#     colnames(logic)<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+#   }
+# }
+# else{
+#   File<-read.csv(file=system.file("extdata", "sig_try3.tsv", package = "SigNetA"),sep='\t')
+# 
+# }
 
-}
-#fileSNP<-read.csv(file="ExtraFiles/dmGWAS/diabetesSNP.csv",sep=",")
-#gene.map=SNP2Gene.match(assoc.file="ExtraFiles/dmGWAS/diabetesSNP.csv",snp2gene.file="ExtraFiles/dmGWAS/GenomeWideSNP_5.na30.annot.AffyID", boundary=20)
-
-##dataFile<- read.csv(file="ExtraFiles/dmGWAS/vorinostat.xls",sep="\t")
+  #logic<-File
 #GeneNames and Pvals
-
+  
+  if(proteinN==1){
+    gene2weight<-data.frame(gene=File$GeneNames,weight=File$Pvals)
+    sorted<-gene2weight[order(gene2weight$weight),] 
+    
+    topgenes<-head(sorted,301)
+    
+    gene2weight<-topgenes
+    
+   # print("stage 1 passed")
+    ppiGW.copy <- delete.edges(ppiGW, which(E(ppiGW)$weight <=0.7))
+    ppi <- rmSelfLoops(ppiGW.copy)
+    ppi=decompose.graph(ppi)[[1]]
+   # print(typeof(ppi))
+   # print(ppi)
+    #i_interactome<-igraph.from.graphNEL(interactome)
+    
+    ppinetwork<-as.data.frame(get.edgelist(ppi))
+    ppinetwork$V1<-sub(" *\\(.*", "", ppinetwork$V1)
+    ppinetwork$V2<-sub(" *\\(.*", "", ppinetwork$V2)
+    #print(head(ppinetwork))
+    #p_val<-c()
+    #for(i in 1:length(gene2weight$weight))
+    # { 
+    
+    #if(gene2weight$weight[i]>=1)
+    #{   
+    # gene2weight$weight[i]<-0.999
+    #append(p_val,gene2weight$weight[i])
+    #}
+    # else if(gene2weight$weight[i]<=0){
+    # gene2weight$weight[i]<-0.0000001
+    # }
+    #}
+   # print("stage 2 passed")
+    res.list = dms(ppinetwork, gene2weight, d=1, r=0.1) #works for 300 genes and d=1
+    
+    ##error while running res.list with different parameters
+    ##100 genes error is Error in dm.result[[k]] : subscript out of bounds
+    ##200 genes error is -Error in identical.idx[[k]] : subscript out of bounds
+    ##201 and above works
+    ##
+   # print("stage 3 passed")
+    selected = simpleChoose(res.list, top=100, plot=T) 
+    #print("stage 4 passed")
+    
+    #source("ExtraFiles/dmGWAS/plotmodule2.R")
+    logFC<-as.numeric(File$coefficients)
+    names(logFC)<-File$GeneNames
+    colorNet<-plotmodule2(selected$subnetwork, diff.expr =logFC)
+    
+    
+  }
+  
+else if(proteinN==2)
+{
 gene2weight<-data.frame(gene=File$GeneNames,weight=File$Pvals)
 sorted<-gene2weight[order(gene2weight$weight),] 
 
@@ -37,14 +90,14 @@ topgenes<-head(sorted,201)
 
 gene2weight<-topgenes
 
-print("stage 1 passed")
+#print("stage 1 passed")
 
 i_interactome<-igraph.from.graphNEL(interactome)
 
 ppinetwork<-as.data.frame(get.edgelist(i_interactome))
 ppinetwork$V1<-sub(" *\\(.*", "", ppinetwork$V1)
 ppinetwork$V2<-sub(" *\\(.*", "", ppinetwork$V2)
-print(head(ppinetwork))
+#print(head(ppinetwork))
 #p_val<-c()
 #for(i in 1:length(gene2weight$weight))
 # { 
@@ -58,7 +111,7 @@ print(head(ppinetwork))
 # gene2weight$weight[i]<-0.0000001
 # }
 #}
-print("stage 2 passed")
+#print("stage 2 passed")
 res.list = dms(ppinetwork, gene2weight, d=2, r=0.1) #works for 300 genes and d=1
 
 ##error while running res.list with different parameters
@@ -66,14 +119,18 @@ res.list = dms(ppinetwork, gene2weight, d=2, r=0.1) #works for 300 genes and d=1
 ##200 genes error is -Error in identical.idx[[k]] : subscript out of bounds
 ##201 and above works
 ##
-print("stage 3 passed")
+#print("stage 3 passed")
 selected = simpleChoose(res.list, top=100, plot=T) 
-print("stage 4 passed")
+#print("stage 4 passed")
 
 #source("ExtraFiles/dmGWAS/plotmodule2.R")
 logFC<-as.numeric(File$coefficients)
 names(logFC)<-File$GeneNames
 colorNet<-plotmodule2(selected$subnetwork, diff.expr =logFC)
+
+}
+
+
 if(layOut=="1"){
   l<-layout_with_fr(colorNet$n)
   visLay<-"layout_with_fr"
@@ -156,7 +213,7 @@ normalize <- function(x) {
 }
 
 
-print(label)
+#print(label)
 for(i in 1:length(label)){
   nodeVisData[i,3]<-colorNet$c[i];
   nodeVisData[i,6]<-paste0("<p><b>Gene name:</b>",statNet$name[i],"</p><br><p><b>Differential Expression:</b>",statNet$Diff_Exp[i])
@@ -173,18 +230,18 @@ for(i in 1:length(label)){
   
 }
 
-print(nodeVisData)
+#print(nodeVisData)
 
 nodeVisData<-data.frame(nodeVisData[1:7], apply(nodeVisData["size"],2, normalize) )
 for( l in 1:length(nodeVisData$size)){
-  print(nodeVisData$size[l])
+  #print(nodeVisData$size[l])
   if(nodeVisData$size[l]<1)
   {
     nodeVisData$size[l]<-1
   }
 }
 
-print(nodeVisData)
+#print(nodeVisData)
 
 
 ltn<-unlist(lapply(edgeL(module),function(x) length(x[[1]])))
@@ -205,8 +262,32 @@ for (i in 1:nrow(edgeVisData))
   edgeVisData[i, ] = sort(edgeVisData[i, ])
 }
 edgeVisData = edgeVisData[!duplicated(edgeVisData),]
-visObj<- visNetwork(nodeVisData, edgeVisData,height="800px",width="900px")
-print(visObj)
+##STRING TWO(ADDING EDGE VALUES)#
+
+if(proteinN=="1"){
+  
+  
+  edgeVisData$title<-"ppi"
+  edgeVisDataMod<-merge(edgeVisData,s,by.x = c("from","to"),by.y =c("a","b"),all.x = TRUE)
+  
+  for(i in 1:nrow(edgeVisDataMod)){
+    edgeVisDataMod$title[i]<-paste0("<p><b>Neighborhood score:</b>",edgeVisDataMod$f.neighborhood[i],"</p><b>Fusion score:</b>",edgeVisDataMod$f.fusion[i],"</p><b>Cooccurence score:</b>",edgeVisDataMod$f.cooccurence[i],"</p><b>Coexpression score:</b>",edgeVisDataMod$f.coexpression[i],"</p><b>Experimental score:</b>",edgeVisDataMod$f.experimental[i],"</p><b>Database score:</b>",edgeVisDataMod$f.database[i],"</p><b>Textmining score:</b>",edgeVisDataMod$f.textmining[i],"</p><b>Combined score:</b>",edgeVisDataMod$f.combined_score[i],"</p>")
+  }
+  edgeVisData<-edgeVisDataMod
+}
+
+##END...STRING TWO (ADDING EDGE VALUES)##
+if(is.null(nodeGoData) & is.null(edgeGoData))
+{
+  
+  visObj<- visNetwork(nodeVisData, edgeVisData,height="800px",width="900px")
+  
+}
+else{
+  visObj<- visNetwork(nodeGoData, edgeGoData,height="800px",width="900px")
+  # visObj<-enrichObj
+}
+
 visObj<-visExport(visObj,type ="png", name="network",float="right")
 
 if(phy){
@@ -227,6 +308,7 @@ else{
   visObj<-visOptions(visObj,manipulation = TRUE)
 }
 
+return(list("networkObj"=visObj,"networkData"=statNet,"edgeData"=edgeVisData,"nodeData"=nodeVisData))
 
 }
 

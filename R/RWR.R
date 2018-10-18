@@ -7,32 +7,62 @@
 #' @export
 #' @examples
 #' RWR() will analyze network for vorinostat signature from ilincs
-RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
+RWR<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoData=NULL,edgeGoData=NULL,proteinN=1){
+ 
+   
+  logic<-File
+
+    
+##STRING NETWORK ONE(GET MODULE)##  
+if(proteinN==1){
   
-  library(igraph)
-  library(BioNet)
-  library(DLBCL)
-  data(interactome)
-  library(visNetwork)
+  #geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
+  geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
+  geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+  print("RWR")
+  print(geninfo)
+  print(geneLabels)
+  pval<-as.numeric(logic$Pvals)
+  pval<- -log10(pval)
+  names(pval)<-geneLabels
   
-  if(!is.null(File))
-  {  
-    if(is.null(upload5)){
-      logic<-File
-    }
-    else{
-      logic<-read.csv(file=File,sep='\t')
-      colnames(logic)<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-    }
-  }
-  else{
-    logic<-read.csv(file=system.file("extdata", "sig_try3.tsv", package = "SigNetA"),sep='\t')
-  }
+  logFC<-as.numeric(logic$coefficients)
+  names(logFC)<-geneLabels
   
   
-  #source("geneInfoFromPortals.R")
+ 
+  ####Modified function used#######
+ # load(system.file("extdata", "weightedGraphStringPPI_10.rda", package = "SigNetA"))
+ # load(system.file("extdata", "lincscp_1.rda", package = "SigNetA"))
+  #ppiGW.copy <- delete.edges(ppiGW, which(E(ppiGW)$weight <=0.7))
+ # ppi <- rmSelfLoops(igraph.to.graphNEL(ppiGW.copy))
+  ppi<-igraph::simplify(ppiGW,remove.loops = TRUE,remove.multiple = FALSE)
+  ppi=decompose.graph(ppi)[[1]] #get the largest subgraph
   
-  geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
+  ###Identify module using FastHeinz algorithm, nsize is fixed to 30 nodes
+  
+  
+  
+  names(pval)<-logic$GeneID
+  
+
+  module=modules_RWR_TopScores(subnet=ppi, data_vector=pval, damping_factor=0.8, nseeds=10)
+  
+
+  colorNet<-plotmodule2(module, scores =  V(module)$score, diff.expr = logFC)
+  
+ 
+  
+  module<-igraph.to.graphNEL(colorNet$n) #STRING
+
+  
+  
+}
+  
+else if(proteinN==2){
+    
+  #geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
+  geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
   geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
   pval<-as.numeric(logic$Pvals)
   pval<- -log10(pval)
@@ -42,15 +72,12 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   names(logFC)<-geneLabels
   
   
-  ##subnet <- subNetwork(geneLabels, interactome)
-  ## subnet <- rmSelfLoops(subnet)
   
   ####Modified function used#######
-  load(system.file("extdata", "weightedGraphStringPPI_10.rda", package = "SigNetA"))
-  load(system.file("extdata", "lincscp_1.rda", package = "SigNetA"))
-  ppiGW.copy <- delete.edges(ppiGW, which(E(ppiGW)$weight <=0.7))
-  ppi <- rmSelfLoops(ppiGW.copy)
-  ppi=decompose.graph(ppi)[[1]]
+  
+  ppi<- rmSelfLoops(interactome)
+ 
+  #ppi=decompose.graph(ppi)[[1]] #get the largest subgraph
   
   ###Identify module using FastHeinz algorithm, nsize is fixed to 30 nodes
   
@@ -58,43 +85,24 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   
   names(pval)<-logic$GeneID
   
-  #module=modules_FastHeinz(subnet=ppi, data_vector=lincscp_1)
+  
   module=modules_RWR_TopScores(subnet=ppi, data_vector=pval, damping_factor=0.8, nseeds=10)
-  #module=modules_FastHeinz(subnet=ppi, data_vector=pval)
-  #module=
-  ##modified ends##
   
-  ##system.time( fb <- fitBumModel(pval, plot = FALSE))
-  #err2<<-try(scoreNodes(subnet, fb, fdr = 0.1),silent=TRUE)
-  #if(class(err2)=="try-error"){
-  # output$input_error=renderText("No significant subnetwork generated.Please upload another Signature.")
-  # }
-  #else{
-  #output$input_error=renderText("")
-  ##system.time(scores <- scoreNodes(subnet, fb, fdr = 0.1))
-  
-  #err<<-try(runFastHeinz(subnet, scores),silent=TRUE)
-  # if(class(err) == "try-error"){
-  #   
-  #   
-  #   output$input_error=renderText("No significant subnetwork generated.Please upload another Signature.")
-  #   stopifnot(class(err) == "try-error")
-  #   
-  # }
-  
-  
-  # else{
-  #output$input_error=renderText("")
-  ##system.time(module <- runFastHeinz(subnet, scores))
-  
-  # source("rashidplotmodule.R")
-  pdf("wor.pdf")
+  #pdf("wor.pdf")
   colorNet<-plotmodule2(module, scores =  V(module)$score, diff.expr = logFC)
+
   
   module<-igraph.to.graphNEL(colorNet$n) #STRING
-  dev.off()
-  #library(rcytoscapejs)
-  ## IGRAPH LAYOUTS FOR RCYTOSCAPEJS2
+  #dev.off()
+    
+    
+    
+    
+    
+  }
+##END...STRING NETWORK  ONE(GET MODULE##  
+
+  ## IGRAPH LAYOUTS 
   if(layOut=="1"){
     l<-layout_with_fr(colorNet$n)
     visLay<-"layout_with_fr"
@@ -119,10 +127,14 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   }
   
   
+  ##END..IGRAPH LAYOUT##
+  
+  
   id <- nodes(module)
   name <- id
   label<-id #visNetwork and interactome
-  geninfo2<-geneInfoFromPortals(geneList=as.character(id),symbol=T,names=F) #STRING
+  #geninfo2<-geneInfoFromPortals(geneList=as.character(id),symbol=T,names=F) #STRING
+  geninfo2<- geneData[which(geneData$GeneID%in%as.character(id)),]
   name<-apply(geninfo2,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))#STRING
   label<-apply(geninfo2,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))#STRING
   nodeData <- data.frame(id, name, stringsAsFactors=FALSE)
@@ -163,6 +175,9 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   statNet<<-nodeData
   
   
+
+  
+  
   ltn<-unlist(lapply(edgeL(module),function(x) length(x[[1]])))
   source<-unlist(lapply(1:length(ltn),function(x) rep(id[x],ltn[x])))
   target<-unlist(lapply(edgeL(module), function(x) id[unlist(x)]))
@@ -176,20 +191,7 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   edgeData <- data.frame(source, target, stringsAsFactors=FALSE)
   
   
-  #   network <- createCytoscapeJsNetwork(nodeData, edgeData)
-  #   for(i in 1:length(target)){
-  #     
-  #     network$edges[[i]]$data$edgeTargetShape="none"  #making undirected graphss
-  #     
-  #   }
-  #   for(i in 1:length(target)){
-  #     for(j in i:length(target)){
-  #       if(network$edges[[i]]$data$source == network$edges[[j]]$data$target)
-  #         network$edges[[j]]$data$target= "none"
-  #       
-  #     }
-  #     
-  #   }
+ 
   ##VisNetwork###########
   
   nodeVisData$color.background<-rep("blue",nrow(nodeData))
@@ -203,7 +205,7 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   nodeVisData$label<-sub(" *\\(.*", "", nodeVisData$label)
   
   normalize <- function(x) {
-    return (((x - min(x)) / (max(x) - min(x)))*50)
+    return (((x*2 - min(x)) / (max(x) - min(x)))*50)
   }
   
   
@@ -211,17 +213,28 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
     nodeVisData[i,3]<-colorNet$c[i];
     nodeVisData[i,6]<-paste0("<p><b>Gene name:</b>",statNet$name[i],"</p><br><p><b>Gene ID:</b>",statNet$geneID[i],"</p><br><p><b>Differential Expression:</b>",statNet$Diff_Exp[i],"</p><p><b>NCBI link:</b><a href='",statNet$href[i],"' target='_blank'>",statNet$href[i],"</a></p>")
     if(colorNet$d[i]<0)
-    {
+    {if(abs(colorNet$d[i])<0.5){
+      colorNet$d[i]<-  -0.5
+      print(statNet$name[i])
+      print(colorNet$d[i])
+      
+     }
       nodeVisData[i,8]<-colorNet$d[i] * -1 
       
     }
     else{
-      
+      if(abs(colorNet$d[i])<0.5){
+        colorNet$d[i]<- 0.5
+        print(statNet$name[i])
+       print(colorNet$d[i])
+      }
       nodeVisData[i,8]<-colorNet$d[i]
     }
     
   }
   
+  View(nodeVisData)
+  print(nodeVisData["size"])
   
   nodeVisData<-data.frame(nodeVisData[1:7], apply(nodeVisData["size"],2, normalize) )
   for( l in 1:length(nodeVisData$size)){
@@ -234,7 +247,7 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   
   
   
-  
+
   ltn<-unlist(lapply(edgeL(module),function(x) length(x[[1]])))
   
   sourceVis<-unlist(lapply(1:length(ltn),function(x) rep(id[x],ltn[x])))
@@ -248,41 +261,72 @@ RWR<-function(File=NULL,upload5=NULL,phy=FALSE,layOut=1,package=FALSE){
   
   
   edgeVisData <- data.frame(from=sourceVis, to=targetVis, stringsAsFactors=FALSE)
-  
+ 
+
   for (i in 1:nrow(edgeVisData))
   {
     edgeVisData[i, ] = sort(edgeVisData[i, ])
   }
   edgeVisData = edgeVisData[!duplicated(edgeVisData),]
   
+ 
+  ##STRING TWO(ADDING EDGE VALUES)#
+  
+  if(proteinN=="1"){
+    
+    
+    edgeVisData$title<-"ppi"
+    edgeVisDataMod<-igraph::as_data_frame(igraph.from.graphNEL(module),what="edges")
+
+    #edgeVisDataMod<-merge(edgeVisData,s,by.x = c("from","to"),by.y =c("a","b"),all.x = TRUE)
+   
+    for(i in 1:nrow(edgeVisDataMod)){
+      edgeVisDataMod$title[i]<-paste0("<p><b>Neighborhood score:</b>",edgeVisDataMod$f.neighborhood[i],"</p><b>Fusion score:</b>",edgeVisDataMod$f.fusion[i],"</p><b>Cooccurence score:</b>",edgeVisDataMod$f.cooccurence[i],"</p><b>Coexpression score:</b>",edgeVisDataMod$f.coexpression[i],"</p><b>Experimental score:</b>",edgeVisDataMod$f.experimental[i],"</p><b>Database score:</b>",edgeVisDataMod$f.database[i],"</p><b>Textmining score:</b>",edgeVisDataMod$f.textmining[i],"</p><b>Combined score:</b>",edgeVisDataMod$f.combined_score[i],"</p>")
+    }
+    edgeVisData<-edgeVisDataMod
+  }
+  
+  ##END...STRING TWO (ADDING EDGE VALUES)##
+  if(is.null(nodeGoData) & is.null(edgeGoData))
+  {
+    
   visObj<- visNetwork(nodeVisData, edgeVisData,height="800px",width="900px")
   
+  }
+  else{
+    visObj<- visNetwork(nodeGoData, edgeGoData,height="800px",width="900px")
+   # visObj<-enrichObj
+  }
   visObj<-visExport(visObj,type ="png", name="network",float="right")
-  
+ 
   if(phy){
     # print("physics active")
   }
   else{
+   
     visObj<-visIgraphLayout(visObj,layout=visLay)
+  
   }
   
   if(package==TRUE)
   {
+   
     visNetwork(nodeVisData, edgeVisData,height="800px",width="900px")
   }
   else{
+   
     visObj<-visInteraction(visObj,navigationButtons = TRUE)
     
     
     visObj<-visOptions(visObj,manipulation = TRUE)
+    
+    
+  
   }
   
-  #plotInput(network,network$nodes,network$edges)
-  #rcytoscapejs2(network$nodes, network$edges,width=1500,height=1800, layout="spread", showPanzoom=TRUE)
-  #}
+
+ return(list("networkObj"=visObj,"networkData"=statNet,"edgeData"=edgeVisData,"nodeData"=nodeVisData))
   
-  ###END FILE GENERATE UPLOAD NETWORK###
-  #}
   
   
 }

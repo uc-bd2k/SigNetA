@@ -4,8 +4,8 @@
 \alias{dmGWAS}
 \title{dmGWAS Function}
 \usage{
-dmGWAS(File = NULL, upload3 = NULL, layOut = 1, proteinN = 2,
-  phy = FALSE, enrich = NULL, package = FALSE)
+dmGWAS(File = NULL, layOut = 1, proteinN = 1, phy = FALSE,
+  package = FALSE, nodeGoData = NULL, edgeGoData = NULL)
 }
 \arguments{
 \item{File}{? Defaults to NULL.}
