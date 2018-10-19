@@ -233,7 +233,7 @@ else if(proteinN==2){
     
   }
   
-  View(nodeVisData)
+  
   print(nodeVisData["size"])
   
   nodeVisData<-data.frame(nodeVisData[1:7], apply(nodeVisData["size"],2, normalize) )
