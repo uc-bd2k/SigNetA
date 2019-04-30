@@ -65,8 +65,10 @@ shinyServer(function(input,output,session){
        path<-paste("/mnt/raid/tmp/",parsedGET[["File"]],sep="")
         #path<-paste("/Users/Rashid/Desktop/Rashid/Career/PhD/Research/Events/BD2KAllHandsMeeting/signatures/",parsedGET[["File"]],sep="")
         loadedFile<<-read.csv(file=path,sep="\t")
-      
-        loadedFile<<-loadedFile[,1:5]
+   ##UPDATED CHANGES FOR FILE COLUMN NAME CHANGE   
+        #loadedFile<<-loadedFile[,1:5]
+        #colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+        loadedFile<<-loadedFile[,c("signatureID","ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
         colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
        
     
@@ -81,7 +83,10 @@ shinyServer(function(input,output,session){
     edgeGO<<-NULL
     updateTabsetPanel(session, "tabs", selected = "cytonet")
     loadedFile<<-read.csv(file=system.file("extdata", "sig_try3.tsv", package = "SigNetA"),sep='\t')
-    loadedFile<<-loadedFile[,1:5]
+    ##UPDATED CHANGES FOR FILE COLUMN NAME CHANGE   
+    #loadedFile<<-loadedFile[,1:5]
+    #colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+    loadedFile<<-loadedFile[,c("signatureID","ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
     colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
   })
   
@@ -91,7 +96,10 @@ shinyServer(function(input,output,session){
     edgeGO<<-NULL
     updateTabsetPanel(session, "tabs", selected = "cytonet")
     loadedFile<<-read.csv(file=input$file1$datapath,sep="\t")
-    loadedFile<<-loadedFile[,1:5]
+    ##UPDATED CHANGES FOR FILE COLUMN NAME CHANGE   
+    #loadedFile<<-loadedFile[,1:5]
+    #colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+    loadedFile<<-loadedFile[,c("signatureID","ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
     colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
     
   })
