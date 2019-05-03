@@ -16,6 +16,7 @@ modules_FastHeinz=function(subnet,data_vector)
     nsize=30
      
     gene_scores=abs(data_vector)[names(data_vector) %in% V(subnet)$name]
+    gene_scores=gene_scores[!duplicated(names(gene_scores))]
     df=data.frame(name=names(gene_scores), gene_scores=gene_scores, rank_gene_scores=length(gene_scores)+1-rank(gene_scores,ties.method ="random"), stringsAsFactors=F)
 
     positive_nodes=seq(nsize,nsize*3,5)

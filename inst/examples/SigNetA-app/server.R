@@ -68,8 +68,10 @@ shinyServer(function(input,output,session){
    ##UPDATED CHANGES FOR FILE COLUMN NAME CHANGE   
         #loadedFile<<-loadedFile[,1:5]
         #colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-        loadedFile<<-loadedFile[,c("signatureID","ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
+        loadedFile<<-loadedFile[c("ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
+        loadedFile<<-cbind("signatureID"=NA,loadedFile)
         colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+        View(loadedFile)
        
     
     }
@@ -86,8 +88,10 @@ shinyServer(function(input,output,session){
     ##UPDATED CHANGES FOR FILE COLUMN NAME CHANGE   
     #loadedFile<<-loadedFile[,1:5]
     #colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-    loadedFile<<-loadedFile[,c("signatureID","ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
+    loadedFile<<-loadedFile[,c("ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
+    loadedFile<<-cbind("signatureID"=NA,loadedFile)
     colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+    View(loadedFile)
   })
   
   
@@ -99,8 +103,10 @@ shinyServer(function(input,output,session){
     ##UPDATED CHANGES FOR FILE COLUMN NAME CHANGE   
     #loadedFile<<-loadedFile[,1:5]
     #colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-    loadedFile<<-loadedFile[,c("signatureID","ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
+    loadedFile<<-loadedFile[,c("ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
+    loadedFile<<-cbind("signatureID"=NA,loadedFile)
     colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
+    View(loadedFile)
     
   })
   

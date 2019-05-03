@@ -5,6 +5,7 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
   library(igraph)
   library(BioNet)
   
+ 
   if (is(subnet, "graphNEL")) {
     subnet <- igraph.from.graphNEL(subnet) 
 #     interactomeLen<-length(V(subnet)$name)
@@ -20,12 +21,29 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
   nsize=30
   
   input_scores=abs(data_vector)[names(data_vector) %in% V(subnet)$name]
+  
+ 
+  input_scores=input_scores[!duplicated(names(input_scores))]
+ 
+ 
   topgenes=names(input_scores[order(input_scores, decreasing=T)][1:nseeds])
-  
-  input_scores[names(input_scores)]=0
-  input_scores[topgenes]=1
-  
+  print("start")
+
+ input_scores[names(input_scores)]=round(input_scores[names(input_scores)],digit=3)    
+ 
+ input_scores[topgenes]=round(input_scores[topgenes],digit=3) 
+ 
+  input_scores[names(input_scores)]<-0
+  input_scores[topgenes]<-1
+ 
+
   scores_other=rep(min(input_scores), vcount(subnet)-length(input_scores))
+ 
+ 
+  
+  
+ 
+  
   names(scores_other)=setdiff(V(subnet)$name, names(input_scores)) #problem on this line for interactome
   
   p0=c(input_scores,scores_other)
@@ -55,5 +73,6 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
     }
   }
   V(module_test)$score=data_vector[V(module_test)$name]
+  
   module_test
 }
