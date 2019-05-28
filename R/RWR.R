@@ -11,31 +11,37 @@ RWR<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoData=NULL,edgeGoD
  
    
   logic<-File
-
-    
+  
+  
+  
+  
 ##STRING NETWORK ONE(GET MODULE)##  
 if(proteinN==1){
   
-  #geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
-  geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
+
+  geninfo<-data.frame("GeneID"=logic$GeneID,"Symbol"=logic$GeneNames)
+ 
   geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
-  print("RWR")
-  print(geninfo)
-  print(geneLabels)
+ 
   pval<-as.numeric(logic$Pvals)
   pval<- -log10(pval)
   names(pval)<-geneLabels
   
   logFC<-as.numeric(logic$coefficients)
+  
   names(logFC)<-geneLabels
+  
+  
+
+  
+ 
+  
+  
   
   
  
   ####Modified function used#######
- # load(system.file("extdata", "weightedGraphStringPPI_10.rda", package = "SigNetA"))
- # load(system.file("extdata", "lincscp_1.rda", package = "SigNetA"))
-  #ppiGW.copy <- delete.edges(ppiGW, which(E(ppiGW)$weight <=0.7))
- # ppi <- rmSelfLoops(igraph.to.graphNEL(ppiGW.copy))
+ 
   ppi<-igraph::simplify(ppiGW,remove.loops = TRUE,remove.multiple = FALSE)
   ppi=decompose.graph(ppi)[[1]] #get the largest subgraph
   
@@ -45,15 +51,43 @@ if(proteinN==1){
   
   names(pval)<-logic$GeneID
   
+  #added code
+  module=modules_RWR_TopScores(subnet=ppi, data_vector=pval,damping_factor=0.8, nseeds=10)
 
-  module=modules_RWR_TopScores(subnet=ppi, data_vector=pval, damping_factor=0.8, nseeds=10)
+  #CONSTRUCT module only dataframe##
+  modIds<-V(module)$name
+  geninfo<- geneData[which(as.character(geneData$GeneID) %in% as.character(modIds)),]
+  geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+  geninfo$diffExp<-NA
   
+  for(i in 1:nrow(geninfo)){
+    if(geninfo$GeneID[i] %in% logic$GeneID){
+      geninfo$diffExp[i]<-logic$coefficients[match(geninfo$GeneID[i],logic$GeneID)]      
+      
+    }
+    
+    }
+  logFC<-as.numeric(geninfo$diffExp)
+  
+  names(logFC)<-geneLabels
+  
+  
+  
+  #END of CONSTRUCT module only dataframe##
+ 
+
+ V(module)$score[is.na(V(module)$score)]<- 0.01
+
+
+
+
+#added code end
 
   colorNet<-plotmodule2(module, scores =  V(module)$score, diff.expr = logFC)
-  
- 
+
   
   module<-igraph.to.graphNEL(colorNet$n) #STRING
+  
 
   
   
@@ -61,23 +95,28 @@ if(proteinN==1){
   
 else if(proteinN==2){
     
-  #geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
-  geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
+
+  
+  geninfo<-data.frame("GeneID"=logic$GeneID,"Symbol"=logic$GeneNames)
+  
   geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+  
   pval<-as.numeric(logic$Pvals)
   pval<- -log10(pval)
   names(pval)<-geneLabels
   
   logFC<-as.numeric(logic$coefficients)
+  
   names(logFC)<-geneLabels
+  
+ 
   
   
   
   ####Modified function used#######
   
   ppi<- rmSelfLoops(interactome)
- 
-  #ppi=decompose.graph(ppi)[[1]] #get the largest subgraph
+
   
   ###Identify module using FastHeinz algorithm, nsize is fixed to 30 nodes
   
@@ -87,8 +126,29 @@ else if(proteinN==2){
   
   
   module=modules_RWR_TopScores(subnet=ppi, data_vector=pval, damping_factor=0.8, nseeds=10)
+  #CONSTRUCT module only dataframe##
+  modIds<-V(module)$name
+  geninfo<- geneData[which(as.character(geneData$GeneID) %in% as.character(modIds)),]
+  geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+  geninfo$diffExp<-NA
+  
+  for(i in 1:nrow(geninfo)){
+    if(geninfo$GeneID[i] %in% logic$GeneID){
+      geninfo$diffExp[i]<-logic$coefficients[match(geninfo$GeneID[i],logic$GeneID)]      
+      
+    }
+    
+  }
+  logFC<-as.numeric(geninfo$diffExp)
+  
+  names(logFC)<-geneLabels
+
+  
+  
+  #END of CONSTRUCT module only dataframe##
   
   #pdf("wor.pdf")
+  V(module)$score[is.na(V(module)$score)]<- 0.01
   colorNet<-plotmodule2(module, scores =  V(module)$score, diff.expr = logFC)
 
   
@@ -100,7 +160,7 @@ else if(proteinN==2){
     
     
   }
-##END...STRING NETWORK  ONE(GET MODULE##  
+##END...STRING NETWORK  ONE(GET MODULE)##  
 
   ## IGRAPH LAYOUTS 
   if(layOut=="1"){
@@ -133,8 +193,12 @@ else if(proteinN==2){
   id <- nodes(module)
   name <- id
   label<-id #visNetwork and interactome
-  #geninfo2<-geneInfoFromPortals(geneList=as.character(id),symbol=T,names=F) #STRING
+ 
+ 
   geninfo2<- geneData[which(geneData$GeneID%in%as.character(id)),]
+  
+  
+ 
   name<-apply(geninfo2,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))#STRING
   label<-apply(geninfo2,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))#STRING
   nodeData <- data.frame(id, name, stringsAsFactors=FALSE)
@@ -205,45 +269,33 @@ else if(proteinN==2){
   nodeVisData$label<-sub(" *\\(.*", "", nodeVisData$label)
   
   normalize <- function(x) {
-    return (((x*2 - min(x)) / (max(x) - min(x)))*50)
+    #return (((x*2 - min(x)) / (max(x) - min(x)))*50)
+    return (   20*((x - min(x)) / (max(x) - min(x))) + 30  )
   }
+  
+  #scoreLength<-max(colorNet$sc)*2 
   
   
   for(i in 1:length(label)){
     nodeVisData[i,3]<-colorNet$c[i];
-    nodeVisData[i,6]<-paste0("<p><b>Gene name:</b>",statNet$name[i],"</p><br><p><b>Gene ID:</b>",statNet$geneID[i],"</p><br><p><b>Differential Expression:</b>",statNet$Diff_Exp[i],"</p><p><b>NCBI link:</b><a href='",statNet$href[i],"' target='_blank'>",statNet$href[i],"</a></p>")
-    if(colorNet$d[i]<0)
-    {if(abs(colorNet$d[i])<0.5){
-      colorNet$d[i]<-  -0.5
-      print(statNet$name[i])
-      print(colorNet$d[i])
-      
-     }
-      nodeVisData[i,8]<-colorNet$d[i] * -1 
-      
-    }
-    else{
-      if(abs(colorNet$d[i])<0.5){
-        colorNet$d[i]<- 0.5
-        print(statNet$name[i])
-       print(colorNet$d[i])
-      }
-      nodeVisData[i,8]<-colorNet$d[i]
-    }
+    nodeVisData[i,6]<-paste0("<p><b>Gene name:</b>",statNet$name[i],"</p><br><p><b>Gene ID:</b>",statNet$geneID[i],"</p><br><p><b>Differential Expression:</b>",statNet$Diff_Exp[i],"</p><br><p><b>Score:</b>",statNet$sc[i],"</p><p><b>NCBI link:</b><a href='",statNet$href[i],"' target='_blank'>",statNet$href[i],"</a></p>")
+  
+    nodeVisData[i,8]<-colorNet$sc[i]
+
+ 
     
   }
-  
-  
-  print(nodeVisData["size"])
-  
+
   nodeVisData<-data.frame(nodeVisData[1:7], apply(nodeVisData["size"],2, normalize) )
-  for( l in 1:length(nodeVisData$size)){
-    
-    if(nodeVisData$size[l]<1)
-    {
-      nodeVisData$size[l]<-1
-    }
-  }
+  # for( l in 1:length(nodeVisData$size)){
+  #   
+  #   if(nodeVisData$size[l]<1)
+  #   {
+  #     nodeVisData$size[l]<-1
+  #   }
+  # }
+  
+  
   
   
   
@@ -278,7 +330,7 @@ else if(proteinN==2){
     edgeVisData$title<-"ppi"
     edgeVisDataMod<-igraph::as_data_frame(igraph.from.graphNEL(module),what="edges")
 
-    #edgeVisDataMod<-merge(edgeVisData,s,by.x = c("from","to"),by.y =c("a","b"),all.x = TRUE)
+    
    
     for(i in 1:nrow(edgeVisDataMod)){
       edgeVisDataMod$title[i]<-paste0("<p><b>Neighborhood score:</b>",edgeVisDataMod$f.neighborhood[i],"</p><b>Fusion score:</b>",edgeVisDataMod$f.fusion[i],"</p><b>Cooccurence score:</b>",edgeVisDataMod$f.cooccurence[i],"</p><b>Coexpression score:</b>",edgeVisDataMod$f.coexpression[i],"</p><b>Experimental score:</b>",edgeVisDataMod$f.experimental[i],"</p><b>Database score:</b>",edgeVisDataMod$f.database[i],"</p><b>Textmining score:</b>",edgeVisDataMod$f.textmining[i],"</p><b>Combined score:</b>",edgeVisDataMod$f.combined_score[i],"</p>")
@@ -295,7 +347,7 @@ else if(proteinN==2){
   }
   else{
     visObj<- visNetwork(nodeGoData, edgeGoData,height="800px",width="900px")
-   # visObj<-enrichObj
+
   }
   visObj<-visExport(visObj,type ="png", name="network",float="right")
  

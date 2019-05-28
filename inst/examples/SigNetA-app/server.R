@@ -71,7 +71,7 @@ shinyServer(function(input,output,session){
         loadedFile<<-loadedFile[c("ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
         loadedFile<<-cbind("signatureID"=NA,loadedFile)
         colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-        View(loadedFile)
+        
        
     
     }
@@ -91,7 +91,7 @@ shinyServer(function(input,output,session){
     loadedFile<<-loadedFile[,c("ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
     loadedFile<<-cbind("signatureID"=NA,loadedFile)
     colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-    View(loadedFile)
+    
   })
   
   
@@ -106,7 +106,7 @@ shinyServer(function(input,output,session){
     loadedFile<<-loadedFile[,c("ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue")]
     loadedFile<<-cbind("signatureID"=NA,loadedFile)
     colnames(loadedFile)<<-c("signatureID","GeneID","GeneNames","coefficients","Pvals")
-    View(loadedFile)
+    
     
   })
   

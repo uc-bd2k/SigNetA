@@ -6,7 +6,53 @@
 
 <body>
 
-<p>Network analysis of biological systems is increasingly gaining acceptance as a useful method for integration and analysis of gene expression data. SigNetA (Signature Network Analysis) is a web application which provides biologist-friendly user interface for interactive network analysis of large gene expression signature datasets. Users can upload gene IDs, p-values and fold change differential expressions of a gene expression signature to create optimal sub-network from Interactome or STRING human proteome datasets. The user is able to view subnetwork, download generated network data, perform and download GO (Gene Ontology) enrichment analysis. All these functionalities have been integrated within SigNetA to facilitate the interpretation of the subnetwork.<p>
+<h3>About</h3>
+<p>SigNetA (Signature Network Analysis) is a dockerized shiny web application which provides a suite
+of visualization and analysis options for translational scientists and biologists to perform network
+analysis of large gene expression signature datasets. It can also be used as an R package to run
+both the web application and its related R functions from an R environment. Users can upload
+gene IDs, p-values and fold change differential expressions of a gene expression signature to
+create optimal subnetwork from interactome or STRING human proteome datasets. The user can
+view subnetwork, download generated network data, perform and download GO (Gene
+Ontology) enrichment analysis. Network customization options include changing layout, adding
+real-time physics to layout and also the ability to select and add GO pathways to the subnetwork
+genes. Optimal subnetwork is generated using user chosen algorithms provided within the
+application. All these functionalities have been integrated within SigNetA to facilitate the
+interpretation of the subnetwork.<p>
+
+<h3>Instructions</h3>
+
+<u><b>Load data files</b></u>
+ <p>The application accepts tab-separated (.tsv)  or comma-separated (.csv) input files. </p>
+
+<p>Upload input file under "Input Data" on the left panel.The input file will consist of columns with names "ID_geneid","Name_GeneSymbol","Value_LogDiffExp","Significance_pvalue" which are the gene ids, gene symbols, diffential log expression values and p-values.</p>
+
+<p>Click the Load Example button which will load signature GDS_5917(<a href="http://www.ilincs.org/ilincs/signature/GDS_5917">http://www.ilincs.org/ilincs/signature/GDS_5917</a>).The signature data is from 41 [HG-U133A] Affymetrix Human Genome U133A Array arrays which measures kidney transplant response to calcineurin inhibitor-free immunosuppression using sirolimus. Patients treated with sirolimus have a lower prevalence of chronic allograft nephropathy compared to those treated with cyclosporine, a calcineurin inhibitor. </p>
+
+<u><b>Select subnetwork method, layout function and PPI dataset</b></u>
+
+<p> Under "select an algorithm" on the left panel, choose either RWR(Random Walk with Restart), modBionet(Uses BioNet Bioconductor R package) or sortNet( Chooses top hundred genes from input list of genes based on p-values).</p>
+
+<p> Choose preferred layout under "Network Customization" to choose either fruchterman reingold, grid, kamada kawai, sphere or graphOpt. To activate physics simulation choose "activate physics" under "Physics" and use barnesHut, forceAtlas2Based or repulsion. Adjust gravitational constant and central gravity as needed.</p>
+
+<p>Choose between either Interactome from HPRD database or STRING PPI network under "select a network". This will be used as the PPI network in the background from which subnetwork will be generated.</p>
+
+<p>By default the application uses RWR/page rank as the algorithm, fruchterman reingold as layout a layout function and STRING as the PPI network.</p>
+
+
+<u><b>Analysis options</b></u>
+
+<p>Subnetwork is generated in the <i>Network tab</i>. Red shaded nodes are upregulated genes expression,green ones are downregulated and blue nodes are nodes in the subnetwork found from PPI using any of the algorithms in the application. Hovering over network nodes will give node information. Edges have scoring information if STRING PPI is chosen. Nodes and edges can be added to the network. Network can be exported as PNG. Relevant information for the genes of interest from the subnetwork can be found in the <i>"Network Data" tab</i>.</p>
+
+<p>Enriched pathways for the subnetwork genes can be found under the <i>"Gene Ontology(GO) Enrichment Analysis" tab</i>. False Discovery Rate(FDR) can be set in this tab. One or more GO terms can be chosen by clicking on them and using the add pathway button, those GO term are going to be added as nodes in the subnetwork in the <i>Network tab</i>. These GO terms are connected to their respective genes from the subnetwork. Network and GO data can be downloaded from the download option on the left panel for further analysis.</p>
+
+
+
+<b>Note:</b><p>Blue nodes generated from the PPI network using one of the algorithms  do not have any differential expression values. Scores of 0.01 is assigned to those nodes which have not been scored by the algorithm for visualization purposes.</p>
+
+
+
+
 
 <!--begin.rcode
 summary(cars)

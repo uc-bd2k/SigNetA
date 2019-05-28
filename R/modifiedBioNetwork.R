@@ -14,14 +14,30 @@ modifiedBioNetwork<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoDa
   if(proteinN==1)
   {
   #geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
-    geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
-  geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
-  pval<-as.numeric(logic$Pvals)
-  pval<- -log10(pval)
-  names(pval)<-geneLabels
+    
+    #geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
+  #geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+ # pval<-as.numeric(logic$Pvals)
+ # pval<- -log10(pval)
+ # names(pval)<-geneLabels
   
-  logFC<-as.numeric(logic$coefficients)
-  names(logFC)<-geneLabels
+  #logFC<-as.numeric(logic$coefficients)
+  #names(logFC)<-geneLabels
+    
+    #NEW#
+    
+    geninfo<-data.frame("GeneID"=logic$GeneID,"Symbol"=logic$GeneNames)
+    
+    geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+    
+    pval<-as.numeric(logic$Pvals)
+    pval<- -log10(pval)
+    names(pval)<-geneLabels
+    
+    logFC<-as.numeric(logic$coefficients)
+    
+    names(logFC)<-geneLabels
+    #END NEW#
   
   
   ##subnet <- subNetwork(geneLabels, interactome)
@@ -45,6 +61,33 @@ modifiedBioNetwork<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoDa
   module=modules_FastHeinz(subnet=ppi, data_vector=pval)
  
   
+  #CONSTRUCT module only dataframe##
+  modIds<-V(module)$name
+  geninfo<- geneData[which(as.character(geneData$GeneID) %in% as.character(modIds)),]
+  geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+  geninfo$diffExp<-NA
+  
+  for(i in 1:nrow(geninfo)){
+    if(geninfo$GeneID[i] %in% logic$GeneID){
+      geninfo$diffExp[i]<-logic$coefficients[match(geninfo$GeneID[i],logic$GeneID)]      
+      
+    }
+    
+  }
+  logFC<-as.numeric(geninfo$diffExp)
+  
+  names(logFC)<-geneLabels
+
+  
+  
+  #END of CONSTRUCT module only dataframe##
+  
+  #meanScore<-mean(V(module)$score,na.rm=TRUE)
+  
+
+ 
+  V(module)$score[is.na(V(module)$score)]<- 0.01
+  
   # source("rashidplotmodule.R")
  # pdf("wor.pdf")
   colorNet<-plotmodule2(module, scores =  V(module)$score, diff.expr = logFC)
@@ -57,15 +100,27 @@ modifiedBioNetwork<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoDa
   else if(proteinN==2){
     
     #geninfo<-geneInfoFromPortals(geneList=as.character(logic$GeneID),symbol=T,names=F)
-    geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
+    # geninfo<- geneData[which(geneData$GeneID%in%as.character(logic$GeneID)),]
+    # geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+    # pval<-as.numeric(logic$Pvals)
+    # pval<- -log10(pval)
+    # names(pval)<-geneLabels
+    # 
+    # logFC<-as.numeric(logic$coefficients)
+    # names(logFC)<-geneLabels
+    # 
+    
+    geninfo<-data.frame("GeneID"=logic$GeneID,"Symbol"=logic$GeneNames)
+    
     geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+    
     pval<-as.numeric(logic$Pvals)
     pval<- -log10(pval)
     names(pval)<-geneLabels
     
     logFC<-as.numeric(logic$coefficients)
-    names(logFC)<-geneLabels
     
+    names(logFC)<-geneLabels
     
     
     ####Modified function used#######
@@ -84,6 +139,30 @@ modifiedBioNetwork<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoDa
     module=modules_FastHeinz(subnet=ppi, data_vector=pval)
    
     #pdf("wor.pdf")
+    
+    #CONSTRUCT module only dataframe##
+    modIds<-V(module)$name
+    geninfo<- geneData[which(as.character(geneData$GeneID) %in% as.character(modIds)),]
+    geneLabels<-apply(geninfo,1,function(x) paste(x[2],"(",as.integer(x[1]),")",sep=""))
+    geninfo$diffExp<-NA
+    
+    for(i in 1:nrow(geninfo)){
+      if(geninfo$GeneID[i] %in% logic$GeneID){
+        geninfo$diffExp[i]<-logic$coefficients[match(geninfo$GeneID[i],logic$GeneID)]      
+        
+      }
+      
+    }
+    logFC<-as.numeric(geninfo$diffExp)
+    
+    names(logFC)<-geneLabels
+   
+    
+    
+    #END of CONSTRUCT module only dataframe##
+    
+    #pdf("wor.pdf")
+    V(module)$score[is.na(V(module)$score)]<- 0.01
     colorNet<-plotmodule2(module, scores =  V(module)$score, diff.expr = logFC)
     
     
@@ -210,35 +289,36 @@ modifiedBioNetwork<-function(File=NULL,phy=FALSE,layOut=1,package=FALSE,nodeGoDa
   nodeVisData$label<-sub(" *\\(.*", "", nodeVisData$label)
   
   normalize <- function(x) {
-    return (((x*2 - min(x)) / (max(x) - min(x)))*50)
+    #return (((x*2 - min(x)) / (max(x) - min(x)))*50)
+    return (   20*((x - min(x)) / (max(x) - min(x))) + 30  )
   }
-  
 
   for(i in 1:length(label)){
     nodeVisData[i,3]<-colorNet$c[i];
-    nodeVisData[i,6]<-paste0("<p><b>Gene name:</b>",statNet$name[i],"</p><br><p><b>Gene ID:</b>",statNet$geneID[i],"</p><br><p><b>Differential Expression:</b>",statNet$Diff_Exp[i],"</p><p><b>NCBI link:</b><a href='",statNet$href[i],"' target='_blank'>",statNet$href[i],"</a></p>")
-    if(colorNet$d[i]<0)
-    {
-      nodeVisData[i,8]<-colorNet$d[i] * -1 
-      
-    }
-    else{
-      
-      nodeVisData[i,8]<-colorNet$d[i]
-    }
+    nodeVisData[i,6]<-paste0("<p><b>Gene name:</b>",statNet$name[i],"</p><br><p><b>Gene ID:</b>",statNet$geneID[i],"</p><br><p><b>Differential Expression:</b>",statNet$Diff_Exp[i],"</p><br><p><b>Score:</b>",statNet$sc[i],"</p><p><b>NCBI link:</b><a href='",statNet$href[i],"' target='_blank'>",statNet$href[i],"</a></p>")
+    nodeVisData[i,8]<-colorNet$sc[i]
+    # if(colorNet$d[i]<0)
+    # {
+    #   nodeVisData[i,8]<-colorNet$d[i] * -1 
+    #   
+    # }
+    # else{
+    #   
+    #   nodeVisData[i,8]<-colorNet$d[i]
+    # }
     
   }
   
 
   nodeVisData<-data.frame(nodeVisData[1:7], apply(nodeVisData["size"],2, normalize) )
-  for( l in 1:length(nodeVisData$size)){
-    
-    if(nodeVisData$size[l]<1)
-    {
-      nodeVisData$size[l]<-1
-    }
-  }
-  
+  # for( l in 1:length(nodeVisData$size)){
+  #   
+  #   if(nodeVisData$size[l]<1)
+  #   {
+  #     nodeVisData$size[l]<-1
+  #   }
+  # }
+  # 
  
   
   

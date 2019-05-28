@@ -26,7 +26,7 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
   input_scores=input_scores[!duplicated(names(input_scores))]
  
  
-  topgenes=names(input_scores[order(input_scores, decreasing=T)][1:nseeds])
+  topgenes=names(input_scores[order(input_scores, decreasing=T)][1:nseeds]) #get names of first 10 highest score genes
   print("start")
 
  input_scores[names(input_scores)]=round(input_scores[names(input_scores)],digit=3)    
@@ -47,11 +47,12 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
   names(scores_other)=setdiff(V(subnet)$name, names(input_scores)) #problem on this line for interactome
   
   p0=c(input_scores,scores_other)
-  p0_sum2one=p0/sum(p0)
+  p0_sum2one=p0/sum(p0) #probability of jumping to a node when abondoning random walk.Sum of all nodes equal to 1
   
   junk3=  page_rank(subnet, algo = "prpack", vids = V(subnet), directed = TRUE, damping = damping_factor, 
                     personalized = p0_sum2one[V(subnet)$name], weights = NA, options = NULL)
   gene_scores=junk3[[1]]
+  
   
   positive_nodes=seq(nsize,nsize*10,5)
   
@@ -74,5 +75,6 @@ modules_RWR_TopScores=function(subnet,data_vector,damping_factor,nseeds)
   }
   V(module_test)$score=data_vector[V(module_test)$name]
   
+ 
   module_test
 }
